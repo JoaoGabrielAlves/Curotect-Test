@@ -53,16 +53,6 @@ jobs:
       - name: Install Dependencies
         run: composer install -q --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
 
-      - name: Run Database Migrations
-        run: php artisan migrate --force
-        env:
-          DB_CONNECTION: pgsql
-          DB_HOST: localhost
-          DB_PORT: 5432
-          DB_DATABASE: testing
-          DB_USERNAME: postgres
-          DB_PASSWORD: postgres
-
       - name: Publish Ziggy Configuration
         run: php artisan ziggy:generate
 
@@ -77,6 +67,7 @@ jobs:
       - name: Run Backend Tests
         run: ./vendor/bin/pest --compact --parallel
         env:
+          APP_ENV: testing
           DB_CONNECTION: pgsql
           DB_HOST: localhost
           DB_PORT: 5432

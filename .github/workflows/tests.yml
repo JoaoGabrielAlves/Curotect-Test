@@ -14,6 +14,15 @@ jobs:
   ci:
     runs-on: ubuntu-latest
 
+    env:
+      APP_ENV: testing
+      DB_CONNECTION: pgsql
+      DB_HOST: localhost
+      DB_PORT: 5432
+      DB_DATABASE: testing
+      DB_USERNAME: postgres
+      DB_PASSWORD: postgres
+
     services:
       postgres:
         image: postgres:16
@@ -47,30 +56,19 @@ jobs:
           node-version: '22'
           cache: 'npm'
 
-      - name: Install Node Dependencies
-        run: npm ci
-
       - name: Install Dependencies
-        run: composer install -q --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
+        run: |
+          composer install -q --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
+          npm ci
 
-      - name: Publish Ziggy Configuration
-        run: php artisan ziggy:generate
+      - name: Build and Generate Assets
+        run: |
+          php artisan ziggy:generate
+          npm run build
 
-      - name: Build Assets
-        run: npm run build
-
-      - name: Run Frontend Tests
-        run: npm run test
+      - name: Run Tests
+        run: |
+          npm run test
+          ./vendor/bin/pest --compact --parallel
         env:
           LARAVEL_BYPASS_ENV_CHECK: 1
-
-      - name: Run Backend Tests
-        run: ./vendor/bin/pest --compact --parallel
-        env:
-          APP_ENV: testing
-          DB_CONNECTION: pgsql
-          DB_HOST: localhost
-          DB_PORT: 5432
-          DB_DATABASE: testing
-          DB_USERNAME: postgres
-          DB_PASSWORD: postgres

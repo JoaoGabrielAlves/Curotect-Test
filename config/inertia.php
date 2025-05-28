@@ -43,7 +43,7 @@ return [
 
     'testing' => [
 
-        'ensure_pages_exist' => env('INERTIA_ENSURE_PAGES_EXIST', !app()->environment('testing')),
+        'ensure_pages_exist' => env('INERTIA_ENSURE_PAGES_EXIST', env('APP_ENV') !== 'testing'),
 
         'page_paths' => [
 

@@ -1,0 +1,71 @@
+#!/bin/sh
+
+# Colors for output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+NC='\033[0m' # No Color
+
+echo "${BLUE}🚀 Running pre-push checks...${NC}"
+
+# Function to display error and exit
+display_error() {
+    echo "${RED}❌ $1${NC}"
+    exit 1
+}
+
+# Function to display success
+display_success() {
+    echo "${GREEN}✅ $1${NC}"
+}
+
+# Function to display info
+display_info() {
+    echo "${YELLOW}ℹ️  $1${NC}"
+}
+
+# Check if we're in a Laravel project
+if [ ! -f "artisan" ]; then
+    display_error "Not a Laravel project root directory!"
+fi
+
+# Run Laravel Pint on all files
+display_info "Running Laravel Pint on all PHP files..."
+if command -v ./vendor/bin/pint >/dev/null 2>&1; then
+    ./vendor/bin/pint --test || display_error "Laravel Pint found formatting issues. Run './vendor/bin/pint' to fix them."
+    display_success "Laravel Pint passed"
+else
+    display_error "Laravel Pint not found. Install it with: composer require laravel/pint --dev"
+fi
+
+# Run full PHP test suite
+display_info "Running full PHP test suite..."
+if ! php artisan test --parallel; then
+    display_error "PHP tests failed"
+fi
+display_success "PHP tests passed"
+
+# Run ESLint on all files
+display_info "Running ESLint on all JS/TS/Vue files..."
+if ! npm run lint; then
+    display_error "ESLint found issues"
+fi
+display_success "ESLint passed"
+
+# Check Prettier formatting on all files
+display_info "Checking Prettier formatting on all files..."
+if ! npm run format:check; then
+    display_error "Prettier found formatting issues. Run 'npm run format' to fix them."
+fi
+display_success "Prettier check passed"
+
+# Run full JavaScript test suite
+display_info "Running full JavaScript test suite..."
+if ! npm test; then
+    display_error "JavaScript tests failed"
+fi
+display_success "JavaScript tests passed"
+
+echo "${GREEN}🎉 All pre-push checks passed! Ready to push! 🚀${NC}"
+exit 0 
